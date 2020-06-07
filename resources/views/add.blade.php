@@ -42,7 +42,6 @@
         
         e.preventDefault();
         var formData = new FormData(this);
-        
         e.preventDefault();
       
         
@@ -51,7 +50,7 @@
         
         if(id){
         action='api/libro/' + id;
-        method="PUT";
+        formData.append('_method', 'put');
         }
     
         $.ajax({

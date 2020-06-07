@@ -44,7 +44,8 @@ class LibroController extends Controller
 
         $validatedData = $request->validate($rules, $customMessages);
 
-        Libro::create($request->all());
+        Libro::create(['nombre' => $request->nombre, 'descripcion' => $request->descripcion]);
+
         if ($request->portada != "") {
             $foto = $request->file('portada');
             $nombre = $foto->getClientOriginalName();
@@ -79,10 +80,34 @@ class LibroController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $req = $request->all();
+        //$req = $request->all();
+        $rules = [
+            'nombre' => 'required',
+            'descripcion' => 'required',
+        ];
+        $customMessages = [
+            'nombre.required' => 'Cuidado!! el campo del nombre no se admite vacío',
+            'descripcion.required' => 'Cuidado!! el campo del descripcion no se admite vacío',
+        ];
 
+        $validatedData = $request->validate($rules, $customMessages);
+        $libro_editar =  Libro::find($id);
 
-        //Libro::find($id)->update($request->all());
+        $libro_editar->update(['nombre' => $request->nombre, 'descripcion' => $request->descripcion]);
+
+        if ($request->portada != null) {
+            if ($libro_editar->portada != null) {
+                unlink($libro_editar->portada);
+            }
+
+            $foto = $request->file('portada');
+            $nombre = $foto->getClientOriginalName();
+            $nombre = round(microtime(true)) . $nombre;
+            $foto->move("libroImagenes", $nombre);
+
+            Libro::where('id', $libro_editar->id)
+                ->update(['portada' => "libroImagenes/" . $nombre]);
+        }
         return response()->json(["success" => "Registro Actualizado Correctamente"]);
     }
 
